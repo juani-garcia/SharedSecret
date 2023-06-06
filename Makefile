@@ -14,6 +14,10 @@ $(BUILD_DIR)/%.o: %.c
 
 all: secret
 
+debug: CFLAGS += -g
+debug: clean
+debug: all
+
 secret: $(OBJ)
 	$(CC) -o $(BUILD_DIR)/$(TARGET) $^ $(CFLAGS)
 
