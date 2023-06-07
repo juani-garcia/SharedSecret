@@ -240,4 +240,6 @@ fabric.properties
 .history
 .ionide
 
+build/*
+
 # End of https://www.toptal.com/developers/gitignore/api/c,clion+all,visualstudiocode,jetbrains
