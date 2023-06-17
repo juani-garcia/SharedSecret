@@ -22,7 +22,7 @@ static void generate_polynomials(const uint8_t* block, Polynomial* f, Polynomial
     }
 
     for (int i = 2; i < g->degree + 1; i++) {
-        g->coeffs[i] = block[f->degree + i - 2];
+        g->coeffs[i] = block[f->degree + i - 1];
     }
 }
 
