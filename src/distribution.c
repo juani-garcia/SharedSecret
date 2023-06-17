@@ -34,13 +34,9 @@ uint8_t  **generate_shadows(uint8_t* data, size_t data_size, uint8_t k, uint8_t 
         shadows[i] = malloc(2 * block_count * sizeof(uint8_t));
     }
 
-    Polynomial f = {
-            .degree = k-1,
-            .coeffs = malloc(k * sizeof(uint8_t))
-    }, g = {
-            .degree = k-1,
-            .coeffs = malloc(k * sizeof(uint8_t))
-    };
+    Polynomial f , g;
+    init_polynomial(&f, k - 1, malloc(k * sizeof(uint8_t)));
+    init_polynomial(&g, k - 1, malloc(k * sizeof(uint8_t)));
 
     for (uint16_t i = 0; i < block_count; i++) {
         uint8_t* curr_block = data + i * (2*k-2);
