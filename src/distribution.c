@@ -34,23 +34,21 @@ uint8_t  **generate_shadows(uint8_t* data, size_t data_size, uint8_t k, uint8_t 
         shadows[i] = malloc(2 * block_count * sizeof(uint8_t));
     }
 
-    Polynomial f , g;
-    init_polynomial(&f, k - 1, malloc(k * sizeof(uint8_t)));
-    init_polynomial(&g, k - 1, malloc(k * sizeof(uint8_t)));
+    Polynomial *f = init_polynomial(k - 1), *g = init_polynomial(k - 1);
 
     for (uint16_t i = 0; i < block_count; i++) {
         uint8_t* curr_block = data + i * (2*k-2);
-        generate_polynomials(curr_block, &f, &g, mod);
+        generate_polynomials(curr_block, f, g, mod);
 
         for(int j = 0; j < n; j++) {
             uint8_t *sj = shadows[j];
-            sj[2*i] = eval(&f, j + 1, mod);
-            sj[2*i + 1] = eval(&g, j + 1, mod);
+            sj[2*i] = eval(f, j + 1, mod);
+            sj[2*i + 1] = eval(g, j + 1, mod);
         }
     }
 
-    free(f.coeffs);
-    free(g.coeffs);
+    destroy_polinomial(f);
+    destroy_polinomial(g);
 
     return shadows;
 

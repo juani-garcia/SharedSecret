@@ -1,8 +1,23 @@
+#include <stdlib.h>
 #include "polynomial.h"
 
-void init_polynomial(Polynomial *p, uint8_t degree, uint8_t *coeffs) {
-    p->coeffs = coeffs;
+Polynomial *init_polynomial(uint8_t degree) {
+    Polynomial *p = malloc(sizeof(Polynomial));
+    if(p == NULL)
+        return NULL;
+
+    p->coeffs = malloc(sizeof(uint8_t) * degree + 1);
     p->degree = degree;
+
+    return p;
+}
+
+void destroy_polinomial(Polynomial *p) {
+    if(p == NULL)
+        return;
+    free(p->coeffs);
+    free(p);
+
 }
 
 uint8_t eval(Polynomial *p, uint8_t x, uint8_t mod) {
