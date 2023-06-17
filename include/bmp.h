@@ -1,3 +1,6 @@
+#ifndef BMP_H
+#define BMP_H
+
 #include <stdint.h>
 
 #pragma pack(2)
@@ -31,3 +34,5 @@ typedef struct BMPImage {
 BMPImage *readFromFile(const char *path);
 int writeToFile(const char *path, BMPImage *bmp);
 void destroyBMP(BMPImage *bmp);
+
+#endif

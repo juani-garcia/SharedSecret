@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
-#include <stdbool.h>
 
 BMPImage *readFromFile(const char *path) {
     BMPImage *bmp = malloc(sizeof(BMPImage));
@@ -49,7 +48,6 @@ BMPImage *readFromFile(const char *path) {
     }
 
     bytes_read = fread(bmp->data, sizeof(uint8_t), bmp->header->imageSize, stream);
-    printf("Read %ld bytes from data\n", bytes_read);
     if(bytes_read < bmp->header->imageSize) {
         fprintf(stderr, "Error reading data. Read %ld bytes\n", bytes_read);
         goto error_data;
