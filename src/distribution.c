@@ -1,18 +1,12 @@
 #include "distribution.h"
 #include <stdlib.h>
-#include <time.h>
-#include <stdbool.h>
-#include <stdio.h>
-
-static bool init = false;
+#include <sys/random.h>
 
 static uint8_t uniform(uint8_t a, uint8_t b) {
-    if(!init) {
-        srand(time(NULL));
-        init = true;
-    }
+    uint32_t r;
+    getrandom(&r, sizeof(r), GRND_RANDOM);
 
-    double prop = rand() / ((double) RAND_MAX + 1);
+    double prop = r / ((double) UINT32_MAX + 1);
     return  (uint8_t) ((b - a + 1) * prop + a);
 }
 
