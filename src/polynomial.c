@@ -6,13 +6,10 @@ void init_polynomial(Polynomial *p, uint8_t degree, uint8_t *coeffs) {
 }
 
 uint8_t eval(Polynomial *p, uint8_t x, uint8_t mod) {
-    uint8_t acc = 0, pow = 1;
-    x %= mod;
+    uint8_t acc = p->coeffs[p->degree] % mod;
 
-    for(int i = 0; i < p->degree + 1; i++) {
-        uint8_t c = p->coeffs[i] % mod;
-        acc = (acc + pow * c) % mod;
-        pow = (x * pow) % mod;
+    for(int i = p->degree - 1; i >= 0; i--) {
+        acc = (acc * x + p->coeffs[i]) % mod;
     }
 
     return acc;
