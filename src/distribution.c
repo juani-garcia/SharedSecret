@@ -1,4 +1,5 @@
 #include "distribution.h"
+#include "polynomial.h"
 #include <stdlib.h>
 #include <sys/random.h>
 
