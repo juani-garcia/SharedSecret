@@ -47,8 +47,8 @@ uint8_t  **generate_shadows(uint8_t* data, size_t data_size, uint8_t k, uint8_t 
         }
     }
 
-    destroy_polinomial(f);
-    destroy_polinomial(g);
+    destroy_polynomial(f);
+    destroy_polynomial(g);
 
     return shadows;
 

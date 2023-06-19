@@ -12,7 +12,7 @@ Polynomial *init_polynomial(uint8_t degree) {
     return p;
 }
 
-void destroy_polinomial(Polynomial *p) {
+void destroy_polynomial(Polynomial *p) {
     if(p == NULL)
         return;
     free(p->coeffs);
