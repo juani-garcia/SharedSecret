@@ -16,9 +16,6 @@ uint8_t *recover_secret(uint8_t *shadows[], uint8_t *X, size_t block_count, uint
         Polynomial *f = interpolate(X, f_images, k, mod);
         Polynomial *g = interpolate(X, g_images, k, mod);
 
-        printPol(f);
-        printPol(g);
-
         // Fill f and g using Lagrange
         uint8_t r[2];
 
