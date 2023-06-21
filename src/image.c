@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <dirent.h> 
 #include <ftw.h>
+#include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
 
@@ -20,19 +21,21 @@ void writeImageSecret(const uint8_t *data, unsigned j, unsigned k, BMPImage *out
         encodeLsb2(dataSize, data, output->data);
 }
 
-uint8_t *readImageSecret(BMPImage *input, unsigned *j, unsigned k)
+size_t readImageSecret(BMPImage *input, unsigned *j, unsigned k, uint8_t **out)
 {
     size_t dataSize = 2 * input->header->imageSize / (2*k-2);
     *j = input->header->reserved1;
     uint8_t *data = malloc(dataSize);
     if(data == NULL)
-        return NULL;
+        return 0;
     
     if(k >= 3 && k <= 4)
         decodeLsb4(dataSize, input->data, data);
     else
         decodeLsb2(dataSize, input->data, data);
-    return data;
+    
+    *out = data;
+    return dataSize;
 }
 
 void loadImages(const char *imagePath, const char *imageDir, unsigned k, ImageFile **secretImage, ImageFile ***carrierImages, unsigned *carrierCount)
@@ -61,7 +64,7 @@ void loadImages(const char *imagePath, const char *imageDir, unsigned k, ImageFi
         **secretImage = (ImageFile)
         {
             .image = sImage,
-            .path = imagePath,
+            .path = strdup(imagePath),
         };
     }
     else
@@ -125,13 +128,14 @@ void loadImages(const char *imagePath, const char *imageDir, unsigned k, ImageFi
             *carriers[i] = (ImageFile)
             {
                 .image = img,
-                .path = dir->d_name,
+                .path = strdup(dir->d_name),
             };
             i++;
         }
     }
     carriers = realloc(carriers, sizeof(ImageFile*) * i);
     *carrierCount = i;
+    *carrierImages = carriers;
     chdir(cwd);
     free(cwd);
     closedir(d);
@@ -151,4 +155,11 @@ void saveCarriers(const char *imageDir, ImageFile **carrierImages, unsigned carr
 
     chdir(cwd);
     free(cwd);
+}
+
+void destroyImage(ImageFile *image)
+{
+    destroyBMP(image->image);
+    free(image->path);
+    free(image);
 }
