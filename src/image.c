@@ -139,7 +139,8 @@ int loadImages(const char *imagePath, const char *imageDir, unsigned k, ImageFil
 
     if(i < k) {
         fprintf(stderr, "Error: found %d carriers. Needed %d\n", i, k);
-        destroyImage(*secretImage);
+        if(secretImage != NULL)
+            destroyImage(*secretImage);
         for(unsigned j = 0; j < i; j++)
             free(carriers[j]);
         free(carriers);
