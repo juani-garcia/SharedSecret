@@ -4,7 +4,7 @@ INCLUDE_DIR := ./include
 
 TARGET := secret
 
-CFLAGS += -Wall -std=c11 -pedantic -pedantic-errors -Wextra -Werror -Wno-unused-parameter 
+CFLAGS += -Wall -std=gnu11 -pedantic -pedantic-errors -Wextra -Werror -Wno-unused-parameter
 CFLAGS += -fsanitize=address -fno-omit-frame-pointer -Wno-implicit-fallthrough -I $(INCLUDE_DIR)
 C_SOURCES := $(shell find $(SOURCE_DIR)/ -type f -name "*.c")
 OBJ := $(C_SOURCES:%.c=$(BUILD_DIR)/%.o)
