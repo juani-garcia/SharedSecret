@@ -8,6 +8,7 @@
 #include <dirent.h> 
 #include <ftw.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 void writeImageSecret(const uint8_t *data, unsigned j, unsigned k, BMPImage *output)
 {
@@ -64,7 +65,7 @@ void loadImages(const char *imagePath, const char *imageDir, unsigned k, ImageFi
         };
     }
     else
-        *secretImage = NULL;
+        secretImage = NULL;
 
     struct dirent *dir;
     DIR *d = opendir(imageDir);
@@ -80,6 +81,15 @@ void loadImages(const char *imagePath, const char *imageDir, unsigned k, ImageFi
     char *cwd = getcwd(NULL, 0);
     chdir(imageDir);
 
+    int width, height;
+    bool sizeAssigned = false;
+    if(secretImage != NULL)
+    {
+        width = (*secretImage)->image->header->width;
+        height = (*secretImage)->image->header->height;
+        sizeAssigned = true;
+    }
+
     for(i = 0; (dir = readdir(d)) != NULL;) 
     {
         if(dir->d_type == DT_REG)
@@ -93,7 +103,13 @@ void loadImages(const char *imagePath, const char *imageDir, unsigned k, ImageFi
                 destroyBMP(img);
                 continue;
             }
-            if(*secretImage != NULL && img->header->imageSize != (*secretImage)->image->header->imageSize)
+            if(!sizeAssigned)
+            {
+                width = img->header->width;
+                height = img->header->height;
+                sizeAssigned = true;
+            }
+            if(img->header->width != width && img->header->height != height)
             {
                 ///TODO: Inform error
                 destroyBMP(img);
