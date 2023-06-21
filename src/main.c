@@ -20,7 +20,7 @@ static int encode(const char *imagePath, const char *dirPath, int k)
     uint8_t **shadows = generate_shadows(imageData, secretImage->image->header->imageSize, k, carrierCount, mod);
     for (unsigned i = 0; i < carrierCount; i++)
     {
-        writeImageSecret(shadows[i], i, k, carrierImages[i]->image);
+        writeImageSecret(shadows[i], i+1, k, carrierImages[i]->image);
     }
     saveCarriers(dirPath, carrierImages, carrierCount);
 
