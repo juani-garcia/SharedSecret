@@ -2,28 +2,28 @@ SOURCE_DIR := ./src
 BUILD_DIR := ./build
 INCLUDE_DIR := ./include
 
-TARGET := secret
+TARGET := ss
 
 CFLAGS += -Wall -std=gnu11 -pedantic -pedantic-errors -Wextra -Werror -Wno-unused-parameter
-CFLAGS += -fsanitize=address -fno-omit-frame-pointer -Wno-implicit-fallthrough -I $(INCLUDE_DIR)
+CFLAGS += -fno-omit-frame-pointer -Wno-implicit-fallthrough -MMD -I $(INCLUDE_DIR)
 C_SOURCES := $(shell find $(SOURCE_DIR)/ -type f -name "*.c")
 OBJ := $(C_SOURCES:%.c=$(BUILD_DIR)/%.o)
 
-$(BUILD_DIR)/%.o: %.c
+$(BUILD_DIR)/%.o: %.c Makefile
 	mkdir -p $(BUILD_DIR)/$(SOURCE_DIR)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-all: secret
+all: $(TARGET)
 
-debug: CFLAGS += -g
-debug: clean
-debug: all
+debug:
+	CFLAGS=-g make clean all
 
-secret: $(OBJ)
-	$(CC) -o $(BUILD_DIR)/$(TARGET) $^ $(CFLAGS)
+$(TARGET): $(OBJ)
+	$(CC) -o $@ $^ $(CFLAGS)
 
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_DIR) $(TARGET)
 
-.PHONY:
-	clean
+.PHONY: clean all debug
+
+-include $(OBJ:%.o=%.d)
