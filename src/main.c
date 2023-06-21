@@ -3,26 +3,34 @@
 #include "image.h"
 #include "recovery.h"
 #include <stddef.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
+#include <stdbool.h>
 
 const int mod = 251;
 
-static int encode(const char *imagePath, const char *dirPath, int k)
+static int distribute(const char *imagePath, const char *dirPath, int k)
 {
     ImageFile *secretImage;
     ImageFile **carrierImages;
     unsigned carrierCount;
 
-    loadImages(imagePath, dirPath, k, &secretImage, &carrierImages, &carrierCount);
+    if(loadImages(imagePath, dirPath, k, &secretImage, &carrierImages, &carrierCount) < 0) {
+        return EXIT_FAILURE;
+    }
+
     uint8_t *imageData = secretImage->image->data;
     uint8_t **shadows = generate_shadows(imageData, secretImage->image->header->imageSize, k, carrierCount, mod);
     for (unsigned i = 0; i < carrierCount; i++)
     {
         writeImageSecret(shadows[i], i+1, k, carrierImages[i]->image);
     }
-    saveCarriers(dirPath, carrierImages, carrierCount);
+
+    int saved = saveCarriers(dirPath, carrierImages, carrierCount);
+    if(saved < k) {
+        fprintf(stderr, "Error: could only save %d carriers. Needed at least %d\n", saved, k);
+    }
 
     for (unsigned i = 0; i < carrierCount; i++)
     {
@@ -30,18 +38,22 @@ static int encode(const char *imagePath, const char *dirPath, int k)
         free(shadows[i]);
     }
     free(shadows);
+    free(carrierImages);
     destroyImage(secretImage);
 
     return EXIT_SUCCESS;
 }
 
-static int decode(const char *imagePath, const char *dirPath, int k)
+static int recover(const char *imagePath, const char *dirPath, int k)
 {
+    bool error = false;
     BMPImage *secretImage;
     ImageFile **carrierImages;
     unsigned carrierCount;
 
-    loadImages(NULL, dirPath, k, NULL, &carrierImages, &carrierCount);
+    if(loadImages(NULL, dirPath, k, NULL, &carrierImages, &carrierCount) < 0) {
+        return EXIT_FAILURE;
+    }
     uint8_t **shadows = malloc(sizeof(uint8_t*) * carrierCount);
     uint8_t *j = malloc(sizeof(uint8_t) * carrierCount);
     size_t secretSize;
@@ -52,14 +64,34 @@ static int decode(const char *imagePath, const char *dirPath, int k)
         j[i] = tmp;
     }
     uint8_t *secretData = recover_secret(shadows, j, secretSize / 2, k, mod);
-    // int width = carrierImages[0]->image->header->width;
-    // int height = carrierImages[0]->image->header->height;
-    // secretImage = createBMP(secretData, width, height);
-    secretImage = carrierImages[0]->image;
-    secretImage->data = secretData;
-    writeToFile(imagePath, secretImage);
 
-    return EXIT_SUCCESS;
+    if(secretData == NULL) {
+        fprintf(stderr, "Error recovering secret. r missmatch\n");
+        error = true;
+        goto cleanup;
+    }
+
+    secretImage = carrierImages[0]->image;
+
+    free(secretImage->data);
+
+    secretImage->data = secretData;
+    if(writeToFile(imagePath, secretImage) < 0) {
+        error = true;
+    }
+
+cleanup:
+    for (unsigned i = 0; i < carrierCount; i++)
+    {
+        destroyImage(carrierImages[i]);
+        free(shadows[i]);
+    }
+
+    free(j);
+    free(shadows);
+    free(carrierImages);
+
+    return error? EXIT_FAILURE : EXIT_SUCCESS;
 }
 
 int main(int argc, const char **argv)
@@ -80,12 +112,13 @@ int main(int argc, const char **argv)
     }
 
     if(strcmp("d", argv[1]) == 0)
-        return encode(secretPath, imagePath, k);
+        return distribute(secretPath, imagePath, k);
     else if(strcmp("r", argv[1]) == 0)
-        return decode(secretPath, imagePath, k);
+        return recover(secretPath, imagePath, k);
     else
     {
         ///TODO: Error
         return EXIT_FAILURE;
+
     }
 }

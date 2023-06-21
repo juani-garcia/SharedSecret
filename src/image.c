@@ -1,15 +1,13 @@
 #include "image.h"
-#include "bmp.h"
 #include "encoding.h"
 #include <stddef.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <dirent.h> 
-#include <ftw.h>
+#include <dirent.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <errno.h>
 
 void writeImageSecret(const uint8_t *data, unsigned j, unsigned k, BMPImage *output)
 {
@@ -38,27 +36,27 @@ size_t readImageSecret(BMPImage *input, unsigned *j, unsigned k, uint8_t **out)
     return dataSize;
 }
 
-void loadImages(const char *imagePath, const char *imageDir, unsigned k, ImageFile **secretImage, ImageFile ***carrierImages, unsigned *carrierCount)
+int loadImages(const char *imagePath, const char *imageDir, unsigned k, ImageFile **secretImage, ImageFile ***carrierImages, unsigned *carrierCount)
 {
     if(imagePath != NULL)
     {
         BMPImage *sImage = readFromFile(imagePath);
         if(sImage == NULL)
         {
-            ///TODO: Inform error
-            return;
+            fprintf(stderr, "Error reading BMP image: %s\n", imagePath);
+            return -1;
         }
         if(sImage->header->bitDepth != 8 || sImage->header->compression != 0)
         {
-            ///TODO: Inform error
+            fprintf(stderr, "Error in %s. Image is compressed or BPP is different from 8\n", imagePath);
             destroyBMP(sImage);
-            return;
+            return -1;
         }
         if(sImage->header->imageSize % (2*k-2) != 0)
         {
-            ///TODO: Inform error
+            fprintf(stderr, "Error in %s. Data is not divisible by 2k - 2 (%d)\n", imagePath, 2*k-2);
             destroyBMP(sImage);
-            return;
+            return -1;
         }
         *secretImage = (ImageFile*)malloc(sizeof(ImageFile));
         **secretImage = (ImageFile)
@@ -74,12 +72,14 @@ void loadImages(const char *imagePath, const char *imageDir, unsigned k, ImageFi
     DIR *d = opendir(imageDir);
     if(d == NULL)
     {
-        ///TODO: Error
-        return;
+        fprintf(stderr, "Error opening directory %s\n", imageDir);
+        if(errno)
+            perror("");
+        return -1;
     }
 
-    int i;
-    int maxCount = 4;
+    unsigned i;
+    unsigned maxCount = 4;
     ImageFile **carriers = malloc(sizeof(ImageFile*) * maxCount);
     char *cwd = getcwd(NULL, 0);
     chdir(imageDir);
@@ -102,7 +102,9 @@ void loadImages(const char *imagePath, const char *imageDir, unsigned k, ImageFi
                 continue;
             if(img->header->bitDepth != 8 || img->header->compression != 0)
             {
-                ///TODO: Inform error
+                fprintf(stderr,
+                        "Error reading carrier %s. Image is compressed or BPP is different from 8\n",
+                        dir->d_name);
                 destroyBMP(img);
                 continue;
             }
@@ -114,7 +116,8 @@ void loadImages(const char *imagePath, const char *imageDir, unsigned k, ImageFi
             }
             if(img->header->width != width && img->header->height != height)
             {
-                ///TODO: Inform error
+                fprintf(stderr,
+                        "Error reading carrier %s. Carrier dimensions differ\n", dir->d_name);
                 destroyBMP(img);
                 continue;
             }
@@ -133,6 +136,16 @@ void loadImages(const char *imagePath, const char *imageDir, unsigned k, ImageFi
             i++;
         }
     }
+
+    if(i < k) {
+        fprintf(stderr, "Error: found %d carriers. Needed %d\n", i, k);
+        destroyImage(*secretImage);
+        for(unsigned j = 0; j < i; j++)
+            free(carriers[j]);
+        free(carriers);
+        return -1;
+    }
+
     carriers = realloc(carriers, sizeof(ImageFile*) * i);
     *carrierCount = i;
     *carrierImages = carriers;
@@ -140,21 +153,25 @@ void loadImages(const char *imagePath, const char *imageDir, unsigned k, ImageFi
     free(cwd);
     closedir(d);
 
-    return;
+    return 0;
 }
 
-void saveCarriers(const char *imageDir, ImageFile **carrierImages, unsigned carrierCount)
+size_t saveCarriers(const char *imageDir, ImageFile **carrierImages, unsigned carrierCount)
 {
     char *cwd = getcwd(NULL, 0);
+    int saved = 0;
     chdir(imageDir);
 
     for(unsigned i = 0; i < carrierCount; i++)
     {
-        writeToFile(carrierImages[i]->path, carrierImages[i]->image);
+        if(writeToFile(carrierImages[i]->path, carrierImages[i]->image) == 0) {
+            saved++;
+        }
     }
 
     chdir(cwd);
     free(cwd);
+    return saved;
 }
 
 void destroyImage(ImageFile *image)
