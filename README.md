@@ -1,4 +1,4 @@
-# Secreto compartido con estganografía
+# Secreto compartido con esteganografía
 
 ## Descripción
 En este Trabajo Práctico de Implementación se desarrolló una herramienta que permite 
@@ -30,7 +30,7 @@ portadoras una vez finalizada la ejecición
 
 De suceder que:
 1. _\<secret>_ no se pueda leer
-2. La cantidad de imágenes BMP que se pueden leer en directory sea menor que _k_
+2. La cantidad de imágenes BMP que se pueden leer en _\<directory> sea menor que _k_
 
 El programa abortará, mostrando un mensaje de error representativo. 
 
@@ -43,7 +43,7 @@ Para recuperar, se debe correr: `./ss r <secret> k <directory>`, en dónde:
 
 De suceder que:
 1. _\<secret>_ no se pueda escribir
-2. La cantidad de imágenes BMP que se pueden leer en directory sea menor que _k_
+2. La cantidad de imágenes BMP que se pueden leer en _\<directory>_ sea menor que _k_
 
 El programa abortará, mostrando un mensaje de error representativo. 
 
