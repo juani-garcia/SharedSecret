@@ -96,9 +96,11 @@ cleanup:
 
 int main(int argc, const char **argv)
 {
-    if(argc <= 4)
+    if(argc != 5)
     {
-        ///TODO: Error
+        fprintf(stderr, "Error: wrong usage\n");
+        fprintf(stderr, "To distribute, use %s d <destination> k <dir>\n", argv[0]);
+        fprintf(stderr, "To recover, use %s d <source> k <dir>\n", argv[0]);
         return EXIT_FAILURE;
     }
     const char *secretPath = argv[2];
@@ -107,7 +109,7 @@ int main(int argc, const char **argv)
     long k = strtol(argv[3], &endptr, 10);
     if(*endptr != 0)
     {
-        ///TODO: Error
+        fprintf(stderr, "Error: k value must be an integer, received %s\n", argv[3]);
         return EXIT_FAILURE;
     }
 
@@ -117,8 +119,7 @@ int main(int argc, const char **argv)
         return recover(secretPath, imagePath, k);
     else
     {
-        ///TODO: Error
+        fprintf(stderr, "Error: option must be d or r, received %s\n", argv[1]);
         return EXIT_FAILURE;
-
     }
 }
