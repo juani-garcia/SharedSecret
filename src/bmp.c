@@ -1,7 +1,10 @@
 #include "bmp.h"
+#include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
+#include <string.h>
 
 BMPImage *readFromFile(const char *path) {
     BMPImage *bmp = malloc(sizeof(BMPImage));
@@ -117,6 +120,40 @@ error_fopen:
     }
     return -1;
 
+}
+
+BMPImage *createBMP(const uint8_t *data, int width, int height) {
+    BMPHeader *header = malloc(sizeof(BMPHeader));
+    BMPImage *image = malloc(sizeof(BMPImage));
+
+    size_t imageSize = width * height;
+    *header = (BMPHeader)
+    {
+        .signature = {'B', 'M'},
+        .fileSize = imageSize + sizeof(BMPHeader),
+        .dataOffset = sizeof(BMPHeader),
+        .headerSize = sizeof(BMPHeader) - offsetof(BMPHeader, headerSize),
+        .width = width,
+        .height = height,
+        .planes = 1,
+        .bitDepth = 8,
+        .compression = 0,
+        .imageSize = imageSize,
+        .horizontalRes = 0,
+        .verticalRes = 0,
+        .colors = 256,
+        .importantColors = 0,
+    };
+    uint8_t *imgData = malloc(imageSize);
+    memcpy(imgData, data, imageSize);
+    *image = (BMPImage)
+    {
+        .header = header,
+        .data = imgData,
+        .extra = malloc(0),
+    };
+
+    return image;
 }
 
 

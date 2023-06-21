@@ -25,6 +25,8 @@ typedef struct BMPHeader {
     uint32_t importantColors;
 } BMPHeader;
 
+#pragma pack()
+
 typedef struct BMPImage {
     BMPHeader *header;
     uint8_t *extra;
