@@ -112,6 +112,11 @@ int main(int argc, const char **argv)
         fprintf(stderr, "Error: k value must be an integer, received %s\n", argv[3]);
         return EXIT_FAILURE;
     }
+    if(k < 3 || k > 8)
+    {
+        fprintf(stderr, "Error: k value must be between 3 and 8, received %ld\n", k);
+        return EXIT_FAILURE;
+    }
 
     if(strcmp("d", argv[1]) == 0)
         return distribute(secretPath, imagePath, k);
