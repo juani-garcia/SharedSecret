@@ -98,8 +98,20 @@ int loadImages(const char *imagePath, const char *imageDir, unsigned k, ImageFil
         if(dir->d_type == DT_REG)
         {
             BMPImage *img = readFromFile(dir->d_name);
-            if(img == NULL)
+            if(i >= 255)
+            {
+                fprintf(stderr,
+                        "Skipped carrier %s. Carrier limit (255) reached\n",
+                        dir->d_name);
                 continue;
+            }
+            if(img == NULL)
+            {
+                fprintf(stderr,
+                        "Error reading carrier %s. Image is not a valid BMP file\n",
+                        dir->d_name);
+                continue;
+            }
             if(img->header->bitDepth != 8 || img->header->compression != 0)
             {
                 fprintf(stderr,
