@@ -31,6 +31,10 @@ uint8_t  **generate_shadows(uint8_t* data, size_t data_size, uint8_t k, uint8_t 
     size_t block_count = data_size / (2*k -2);
     uint8_t ** shadows = malloc(n * sizeof(uint8_t *));
 
+    for(unsigned i = 0; i < data_size; i++)
+        if(data[i] >= mod)
+            data[i] = mod-1;
+
     for(int i = 0; i < n; i++) {
         shadows[i] = malloc(2 * block_count * sizeof(uint8_t));
     }
